@@ -73,7 +73,7 @@ function newEmptyTexture(x,y) {
 	
 	var texUnitName = "TEXTURE" + counter;
     texture = gl.createTexture();
-    gl.activeTexture(gl.[texUnitName]);
+    gl.activeTexture(gl[texUnitName]);
     gl.bindTexture( gl.TEXTURE_2D, texture );
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
@@ -91,31 +91,32 @@ function newEmptyTexture(x,y) {
 	counter = counter+1;
 	return tex;
 }
-function newCube(
+function newCube()
 {
-	newCube = {};
-	genOBJCube(newCube);
+	var newCube = {};
+	genObj_cube(newCube);
 	
+	newCube.mesh = newCube.cube;
 		 // Vertex Position
 	    vbufferId = gl.createBuffer();
 	    newCube.vbufferId = vbufferId;
 	    gl.bindBuffer( gl.ARRAY_BUFFER, vbufferId );
-	    gl.bufferData( gl.ARRAY_BUFFER,cubeObject.mesh.vertexBlock, gl.STATIC_DRAW );
+	    gl.bufferData( gl.ARRAY_BUFFER,newCube.mesh.vertexBlock, gl.STATIC_DRAW );
 	    
 		//Vertex index
 		ibufferId = gl.createBuffer();
 	    newCube.ibufferId = ibufferId;
 	    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibufferId);
-	    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,cubeObject.mesh.faceVertexBlock, gl.STATIC_DRAW);
+	    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,newCube.mesh.faceVertexBlock, gl.STATIC_DRAW);
 
 		// Normals Buffer
 		var nBuffer = gl.createBuffer();
 		newCube.nbufferId = nBuffer;
 	    gl.bindBuffer( gl.ARRAY_BUFFER, nBuffer);
-	    gl.bufferData( gl.ARRAY_BUFFER, cubeObject.mesh.normalBlock, gl.STATIC_DRAW );
+	    gl.bufferData( gl.ARRAY_BUFFER, newCube.mesh.normalBlock, gl.STATIC_DRAW );
 		
-		cubeObject.transform = mat4();	
-		cubeObject.size = length(cubeObject.mesh.faceVertexBlock)
+		newCube.transform = mat4();	
+		newCube.size = length(newCube.mesh.faceVertexBlock)
 return  newCube;
 }
 
@@ -315,11 +316,13 @@ function configureTextureStage2( image, texUnit,name ) {
 	    var canvas = document.getElementById( "gl-canvas" );
 	    gl = WebGLUtils.setupWebGL( canvas );
 	    if ( !gl ) { alert( "WebGL isn't available" ); }
+		loadFB(canvas, ext);
 	    var ext= gl.getExtension('WEBGL_draw_buffers'); //Initialize our super buffering
 		cubeObject.gl = gl;
+		cubeObject.gl = gl;
 	    cubeObject.canvas = canvas;
-		loadFB(cubeObject.canvas, ext);
-		program = initShaders( gl, "viewobjb.vert", "viewobjb.frag" );  
+		
+		program = initShaders( gl, "viewobjb_3.vert", "viewobjbF.frag" );  
 		gl.getExtension("OES_texture_float");
 	    gl.getExtension("OES_texture_float_linear");
 		initializeQuad()
@@ -340,59 +343,29 @@ function configureTextureStage2( image, texUnit,name ) {
 			allCubes[i] = newCube();
 			allCubes.mesh = newCube.cube;
 		}
-		forward = loadForwardShaders();
+		forward = loadForwardShader();
 		//backwardPass = loadBackPassShader();
 		//backwardFilter = loadBackFilterShader();
+		renderForward();
 	}
 	
 	function loadForwardShader()
 	{
-		Forward.vPosition = newAttribute(program, "vPosition");
-		Forward.vNormal = newAttribute(program, "vNormal");
+		forward.vPosition = newAttribute(program, "vPosition");
+		forward.vNormal = newAttribute(program, "vNormal");
 		pMatrix = perspective(fovy, aspect, near, far);
-		Forward.perspective = newUniform(program, "Projection", "mat4");
-		Forward.modelView = newUniform(program, "EyeMatrix", "mat4");
-		Forward.NMatrix = newUniform(program, "normalMatrix","mat3"); 
-		Formward.color = newUniform(program, "color", "vec3");
-		Formward.color = newUniform(program, "colorScale", "vec3");
+		forward.perspective = newUniform(program, "Projection", "mat4");
+		forward.modelView = newUniform(program, "EyeMatrix", "mat4");
+		forward.NMatrix = newUniform(program, "normalMatrix","mat3"); 
+		forward.color = newUniform(program, "color", "vec3");
+		forward.color = newUniform(program, "colorScale", "vec3");
 
-		Forward.lPos = newUniform(program, "lightPosition","vec4");
-		Forward.ePos = newUniform(program, "eyePosition","vec4");
-		Forward.shiny = newUniform(program, "shinieness","float");	
+		forward.lPos = newUniform(program, "lightPosition","vec4");
+		forward.ePos = newUniform(program, "eyePosition","vec4");
+		forward.shiny = newUniform(program, "shinieness","float");	
 	}
 
-	//----------- LIGHT------------
-	    gl.uniform1f( gl.getUniformLocation(program,
-	       "shininess"),materialShininess );
-	//------------------------------
-
-	//------- EYE ---------------- 
-	gl.uniform3fv( gl.getUniformLocation(program,
-	       "eyePosition"),flatten(eye) );
-
-	//--------------------- Texture Coords: 
-
-	    var tBuffer = gl.createBuffer();
-	    gl.bindBuffer( gl.ARRAY_BUFFER, tBuffer );
-	    gl.bufferData( gl.ARRAY_BUFFER, cubeObject.mesh.texCoordBlockFull, gl.STATIC_DRAW ); //So, to make this line actually work , we're going to need a supercube mesh that essentially containes the concatenated array of all of the vertex+tex coordinates.]
-
-	    vTexCoord = gl.getAttribLocation( program, "vTexCoord" );
-	    gl.vertexAttribPointer( vTexCoord, 2, gl.FLOAT, false, 0, 0 );
-	       
-
-			
-			
-			
-	    gl.uniform1f( gl.getUniformLocation(program,"DeltaSampleS"),DeltaSampleS);
-	    gl.uniform1f( gl.getUniformLocation(program,"DeltaSampleT"),DeltaSampleT);
-		gl.uniform1f( gl.getUniformLocation(program,"Scale"),Scale);
-
-	    popRotTranMat(); //So, now we should be building up the translation and rotation matrices.
-	    
-		enableProg2();
-
-		render();
-	};
+	
 	function popRotTranMat()
 	{
 		for (var i =0; i<600; i++)
@@ -454,18 +427,18 @@ function configureTextureStage2( image, texUnit,name ) {
 		Forward.vNormal.buffer = cube.nbufferId;;
 		
 		var mvMatrix = lookAt( vec3(0,0,-5), vec3(0,0,0), vec3(0,1,0));
-		Forward.modelView.set( modelView );
-		Forward.NMatrix.set( normalMatrix( mvMatrix,true));
-		Forward.perspective.set( perspective( 45, 1, 0.01, 100) );
-		Forward.color.set(vec3(1,0,0));
-		Forward.colorScale.set(vec3(0.5,1,1));
-		Forward.lPos.set(vec3(2,2,-2));
-		Forward.ePos.set(vec3(0,0,-5));
-		Forward.shiny.set(10);
+	forward.modelView.set( modelView );
+		forward.NMatrix.set( normalMatrix( mvMatrix,true));
+		forward.perspective.set( perspective( 45, 1, 0.01, 100) );
+		forward.color.set(vec3(1,0,0));
+		forward.colorScale.set(vec3(0.5,1,1));
+		forward.lPos.set(vec3(2,2,-2));
+		forward.ePos.set(vec3(0,0,-5));
+		forward.shiny.set(10);
 
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,cube.ibufferId);
 		gl.drawElements( gl.TRIANGLES, cube.size, gl.UNSIGNED_SHORT, 0);
-   requestAnimFrame(render1);
+   requestAnimFrame(renderForward);
 	}
 
 	function render1()
