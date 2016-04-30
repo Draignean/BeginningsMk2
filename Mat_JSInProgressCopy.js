@@ -1,5 +1,8 @@
 // CS 4143: example for OBJ file stored in js file
 var cubeObject = {};
+var forward = {};
+var backwardPass = {};
+var backwardFilter = {};
 var program2;
 var program;
 var DeltaSampleS = 0.01;
@@ -7,6 +10,7 @@ var DeltaSampleT = 0.01;
 var Scale = 1.0;
 var quad_positionLocation = 0;
 var quad_texCoordLocation = 1;
+
 
 // -------------------- Projection and EYE ---------------------
 var eye = vec3(0.0,0.0,2.0);
@@ -63,21 +67,58 @@ var degrees = [];
 
 //----------------------------------------------------------------
 //---------------------Texture------------------------------------
-
-function configureTexture( image ) {
+var counter =0;
+function newEmptyTexture(x,y) {
+	var tex = {};
+	
+	var texUnitName = "TEXTURE" + counter;
     texture = gl.createTexture();
-    gl.activeTexture(gl.TEXTURE0);
+    gl.activeTexture(gl.[texUnitName]);
     gl.bindTexture( gl.TEXTURE_2D, texture );
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGB,
-         gl.RGB, gl.UNSIGNED_BYTE, image );
-    gl.generateMipmap( gl.TEXTURE_2D );
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, x, y, 0, gl.RGBA, gl.FLOAT, null);
     gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER,
-                      gl.NEAREST_MIPMAP_LINEAR );
+                      gl.LINEAR );
     gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
-
-    gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
+	
+	tex.texUnit = counter;
+	tex.texName = texUnitName;
+	tex.texData = texture;
+	
+	counter = counter+1;
+	return tex;
 }
+function newCube(
+{
+	newCube = {};
+	genOBJCube(newCube);
+	
+		 // Vertex Position
+	    vbufferId = gl.createBuffer();
+	    newCube.vbufferId = vbufferId;
+	    gl.bindBuffer( gl.ARRAY_BUFFER, vbufferId );
+	    gl.bufferData( gl.ARRAY_BUFFER,cubeObject.mesh.vertexBlock, gl.STATIC_DRAW );
+	    
+		//Vertex index
+		ibufferId = gl.createBuffer();
+	    newCube.ibufferId = ibufferId;
+	    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibufferId);
+	    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,cubeObject.mesh.faceVertexBlock, gl.STATIC_DRAW);
+
+		// Normals Buffer
+		var nBuffer = gl.createBuffer();
+		newCube.nbufferId = nBuffer;
+	    gl.bindBuffer( gl.ARRAY_BUFFER, nBuffer);
+	    gl.bufferData( gl.ARRAY_BUFFER, cubeObject.mesh.normalBlock, gl.STATIC_DRAW );
+		
+		object.transform = mat4();	
+return  newCube;
+}
+
+
 
 // height
 function configureTexture(imageName,imageNum,bufferName) {
@@ -133,16 +174,12 @@ function configureTextureStage2( image, texUnit,name ) {
 	var normalTexture;
 	var positionTexture;
 	var colorTexture;
-	function loadFB(canvas) 
+	function loadFB(canvas, ext) 
 	{
-		gl.getExtension("OES_texture_float");
-	    gl.getExtension("OES_texture_float_linear")
-		var matTexture = gl.createTexture();
-	var normalTexture = gl.createTexture();
-	var positionTexture = gl.createTexture();
-	var colorTexture = gl.createTexture();
-		
-		var ext = gl.getExtension('WEBGL_draw_buffers'); //Initialize our super buffering
+	var matTexture = newEmptyTexture(canvas.width,canvas.height);
+	var normalTexture = newEmptyTexture(canvas.width,canvas.height);
+	var positionTexture = newEmptyTexture(canvas.width,canvas.height);
+	var colorTexture = newEmptyTexture(canvas.width,canvas.height);
 		
 		var fb = gl.createFramebuffer();
 	gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
@@ -153,41 +190,10 @@ function configureTextureStage2( image, texUnit,name ) {
 	  ext.COLOR_ATTACHMENT3_WEBGL  // gl_FragData[3]
 		]);
 
-	    gl.bindTexture(gl.TEXTURE_2D, matTexture); //Material Texture
-	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-	    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.FLOAT, null)
-
-
-	    gl.bindTexture(gl.TEXTURE_2D, normalTexture); //Normal Tezture
-	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-	    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.FLOAT, null);
-
-
-	    gl.bindTexture(gl.TEXTURE_2D, positionTexture); //Position Texture
-	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-	    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.FLOAT, null);
-
-
-	    gl.bindTexture(gl.TEXTURE_2D, colorTexture); //Color Texture
-	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-	    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.FLOAT, null);
-
-		gl.framebufferTexture2D(gl.FRAMEBUFFER, ext.COLOR_ATTACHMENT0_WEBGL, gl.TEXTURE_2D, matTexture, 0);
-		gl.framebufferTexture2D(gl.FRAMEBUFFER, ext.COLOR_ATTACHMENT1_WEBGL, gl.TEXTURE_2D, normalTexture, 0);
-		gl.framebufferTexture2D(gl.FRAMEBUFFER, ext.COLOR_ATTACHMENT2_WEBGL, gl.TEXTURE_2D, positionTexture, 0);    
-		gl.framebufferTexture2D(gl.FRAMEBUFFER, ext.COLOR_ATTACHMENT3_WEBGL, gl.TEXTURE_2D, colorTexture, 0);
+		gl.framebufferTexture2D(gl.FRAMEBUFFER, ext.COLOR_ATTACHMENT0_WEBGL, gl.TEXTURE_2D, matTexture.texdata, 0);
+		gl.framebufferTexture2D(gl.FRAMEBUFFER, ext.COLOR_ATTACHMENT1_WEBGL, gl.TEXTURE_2D, normalTexture.texData, 0);
+		gl.framebufferTexture2D(gl.FRAMEBUFFER, ext.COLOR_ATTACHMENT2_WEBGL, gl.TEXTURE_2D, positionTexture.texData, 0);    
+		gl.framebufferTexture2D(gl.FRAMEBUFFER, ext.COLOR_ATTACHMENT3_WEBGL, gl.TEXTURE_2D, colorTexture.texData, 0);
 		 var FBOstatus = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
 		    if(FBOstatus == gl.FRAMEBUFFER_COMPLETE) {
 		    console.log("GREEN LIGHT, Frambuffer is properly configured!");        	
@@ -308,119 +314,53 @@ function configureTextureStage2( image, texUnit,name ) {
 	    var canvas = document.getElementById( "gl-canvas" );
 	    gl = WebGLUtils.setupWebGL( canvas );
 	    if ( !gl ) { alert( "WebGL isn't available" ); }
-	    cubeObject.gl = gl;
+	    var ext= gl.getExtension('WEBGL_draw_buffers'); //Initialize our super buffering
+		cubeObject.gl = gl;
 	    cubeObject.canvas = canvas;
-		loadFB(cubeObject.canvas);
+		loadFB(cubeObject.canvas, ext);
 		program = initShaders( gl, "viewobjb.vert", "viewobjb.frag" );  
-
+		gl.getExtension("OES_texture_float");
+	    gl.getExtension("OES_texture_float_linear");
 		initializeQuad()
-
+	
 
 		aspect =  canvas.width/canvas.height;
 		
 	    gl.viewport( 0, 0, canvas.width, canvas.height );
 	    gl.clearColor( 0.80, 0.60, 0.60, 1.0 );  
 	    gl.enable(gl.DEPTH_TEST);
-	 
-
-		
+	
 	    gl.useProgram( program );
 	    cubeObject.program = program;
-	    genObj_cube(cubeObject);
-	    cubeObject.mesh = cubeObject.cube; 
-	     lightPosition.z = -lightPosition.z;
-	     
-	     
-		configureTexture("image0.png",0, "texture"); 
-		configureTexture("image1.png",1,"texture_h");
-		 
-	    modelView = gl.getUniformLocation( program, "EyeMatrix" );
-	    projection = gl.getUniformLocation( program, "projection" );
-	    normalMatrixLoc = gl.getUniformLocation( program, "normalMatrix" );    
-	  
-	     
-	     
-	    // find and enable attribute vPosition
-	    vPositionLoc = gl.getAttribLocation( program, "vPosition" );
-	    cubeObject.vPositionLoc = vPositionLoc;
-	     // turns on attribute
-		
-	    
-	   
-	    // create and bind verticesA to a buffer
-	    vbufferId = gl.createBuffer();
-	    cubeObject.vbufferId = vbufferId;
-	    gl.bindBuffer( gl.ARRAY_BUFFER, vbufferId );
-	    gl.bufferData( gl.ARRAY_BUFFER,cubeObject.mesh.vertexBlockFull, gl.STATIC_DRAW );
-	    
-		ibufferId = gl.createBuffer();
-	    cubeObject.ibufferId = ibufferId;
-	    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibufferId);
-	    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,cubeObject.mesh.faceVertexBlockFull , gl.STATIC_DRAW);
-
-		// Normals 
-
-		var nBuffer = gl.createBuffer();
-	    gl.bindBuffer( gl.ARRAY_BUFFER, nBuffer);
-	    gl.bufferData( gl.ARRAY_BUFFER, cubeObject.mesh.normalBlockFull, gl.STATIC_DRAW );
-	    vNormal = gl.getAttribLocation( program, "vNormal" );
-	    gl.vertexAttribPointer(vNormal, 3, gl.FLOAT, false, 0, 0 );
-	 
-
-	   //Rotation indexin
-		var indexBuffer = gl.createBuffer();
-		gl.bindBuffer(gl.ARRAY_BUFFER, indexBuffer);
-		gl.bufferData(gl.ARRAY_BUFFER, cubeObject.mesh.rotationIndexBlock, gl.STATIC_DRAW);
-		indexLoc = gl.getAttribLocation(program, "vLoc");
-		gl.vertexAttribPointer(indexLoc,4,gl.FLOAT,false,0,0);
-
-
-		
-	    // Tangents
-	    
-	    var tBuffer = gl.createBuffer();
-	    gl.bindBuffer( gl.ARRAY_BUFFER, tBuffer);
-	    gl.bufferData( gl.ARRAY_BUFFER, cubeObject.mesh.tangentBlockFull, gl.STATIC_DRAW );
-	    vTangent = gl.getAttribLocation( program, "vTangent" );
-	    gl.vertexAttribPointer( vTangent, 3, gl.FLOAT, false, 0, 0 );
-	    
-	    cubeObject.colorA = [ 0,1,0,1]; // green
-	    cubeObject.uColorLoc = gl.getUniformLocation( program, "uColor" );
-	    cubeObject.uScaleLoc = gl.getUniformLocation( program, "uScale" );
-	    cubeObject.scale = new Float32Array([
-		     (cubeObject.mesh.maxBound[0] - cubeObject.mesh.minBound[0]),
-		     (cubeObject.mesh.maxBound[1] - cubeObject.mesh.minBound[1]),
-		     (cubeObject.mesh.maxBound[2] - cubeObject.mesh.minBound[2])]);
-
-	    for(var i=0; i < 3; ++i){
-		    if (cubeObject.scale[i] > 0 ) { 
-		    cubeObject.scale[i] = 1.0/cubeObject.scale[i];
-		    } else { 
-			    cubeObject.scale[i] = 1.0;
-		    }
-	    }
-
-	    cubeObject.uTranslateLoc = gl.getUniformLocation( program, "uTranslate" );
-	    cubeObject.translate = new Float32Array( [
-		     cubeObject.mesh.centroid[0] *-1.0,
-		     cubeObject.mesh.centroid[1] *-1.0,
-		     cubeObject.mesh.centroid[2] *-1.0]);
-
-	    gl.uniform4fv(cubeObject.uColorLoc, flatten(cubeObject.colorA));
-	    gl.uniform3fv(cubeObject.uTranslateLoc, flatten(cubeObject.translate));
-	    gl.uniform3fv(cubeObject.uScaleLoc, cubeObject.scale);
-
-	    cubeObject.tColors = []
-	    for(var i=0; i < cubeObject.mesh.numFaces*10;++i) {
-		    cubeObject.tColors.push(vec4(Math.random(),Math.random(),Math.random(),1.0));
-	    }
+	
+		var allCubes = [];
+		for (var i = 0; i<1; i++)
+		{
+			allCubes[i] = newCube();
+			allCubes.mesh = newCube.cube;
+		}
+		forward = loadForwardShaders();
+		//backwardPass = loadBackPassShader();
+		//backwardFilter = loadBackFilterShader();
+	}
+	
+	function loadForwardShader()
+	{
+		Forward.vPosition = newAttribute(program, "vPosition");
+		Forward.vNormal = newAttribute(program, "vNormal");
+		pMatrix = perspective(fovy, aspect, near, far);
+		Forward.perspective = newUniform(program, "Projection", "mat4");
+		Forward.modelView = newUniform(program, "EyeMatrix", "mat4");
+		Forward.NMatrix = newUniform(program, "normalMatrix","mat3"); 
+		Forward.aProd = newUniform(program, "ambientProduct","vec4");
+		Forward.dProd = newUniform(program, "diffuseProduct","vec4");
+		Forward.sProd = newUniform(program, "specularProduct","vec4");
+		Forward.lPos = newUniform(program, "lightPosition","vec4");
+		Forward.ePos = newUniform(program, "eyePosition","vec4");
+		Forward.shiny = newUniform(program, "shinieness","float");	
+	}
 
 	//----------- LIGHT------------
-
-
-
-
-
 	    gl.uniform1f( gl.getUniformLocation(program,
 	       "shininess"),materialShininess );
 	//------------------------------
@@ -452,8 +392,6 @@ function configureTextureStage2( image, texUnit,name ) {
 
 		render();
 	};
-
-
 	function popRotTranMat()
 	{
 		for (var i =0; i<600; i++)
@@ -508,6 +446,29 @@ function configureTextureStage2( image, texUnit,name ) {
 		return output;
 	}
 
+	function renderForward()
+	{
+		
+		
+		
+		
+		Forward.vPosition = newAttribute(program, "vPosition");
+		Forward.vNormal = newAttribute(program, "vNormal");
+		pMatrix = perspective(fovy, aspect, near, far);
+		Forward.perspective = newUniform(program, "Projection", "mat4");
+		Forward.modelView = newUniform(program, "EyeMatrix", "mat4");
+		Forward.NMatrix = newUniform(program, "normalMatrix","mat3"); 
+		Forward.aProd = newUniform(program, "ambientProduct","vec4");
+		Forward.dProd = newUniform(program, "diffuseProduct","vec4");
+		Forward.sProd = newUniform(program, "specularProduct","vec4");
+		Forward.lPos = newUniform(program, "lightPosition","vec4");
+		Forward.ePos = newUniform(program, "eyePosition","vec4");
+		Forward.shiny = newUniform(program, "shinieness","float");
+		
+		
+		mvMatrix = lookAt(eye, at , up);
+		normalMatrixx = normalMatrix(mvMatrix,true);
+	}
 
 	function render1()
 	{
@@ -529,13 +490,8 @@ gl.uniformMatrix4fv(rotTranMatLoc, false,reallyFlatten(rotTranMat)); //Okay, so 
 	// Look at
     mvMatrix = lookAt(eye, at , up);
     // Perspective
-    pMatrix = perspective(fovy, aspect, near, far);
+   
     
-    normalMatrixx = normalMatrix(mvMatrix,true);
-    
-	gl.uniformMatrix4fv( modelView, false, flatten(mvMatrix) );
-    gl.uniformMatrix4fv( projection, false, flatten(pMatrix) );
-    gl.uniformMatrix3fv(normalMatrixLoc, false, flatten(normalMatrixx) );
     
     // draw first triangle
     gl.bindBuffer( gl.ARRAY_BUFFER, cubeObject.vbufferId );  // select triangle A's vertex buffer
@@ -591,6 +547,7 @@ gl.uniformMatrix4fv(rotTranMatLoc, false,reallyFlatten(rotTranMat)); //Okay, so 
     
     normalMatrixx = normalMatrix(mvMatrix,true);
     
+    
 	gl.uniformMatrix4fv( modelView, false, flatten(mvMatrix) );
     gl.uniformMatrix4fv( projection, false, flatten(pMatrix) );
     gl.uniformMatrix3fv(normalMatrixLoc, false, flatten(normalMatrixx) );
@@ -612,9 +569,6 @@ gl.uniformMatrix4fv(rotTranMatLoc, false,reallyFlatten(rotTranMat)); //Okay, so 
        // gl.drawElements( gl.TRIANGLES,cubeObject.mesh.faceDim ,gl.UNSIGNED_SHORT,cubeObject.mesh.faceDim*i*2); 
 		gl.drawElements( gl.TRIANGLES,720,gl.UNSIGNED_SHORT,0); 
    // }
-
-setupQuad(program2,prog2Locs);
-drawQuad();
 
    requestAnimFrame(render);
 }
