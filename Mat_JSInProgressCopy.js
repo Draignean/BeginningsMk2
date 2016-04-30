@@ -10,7 +10,7 @@ var DeltaSampleT = 0.01;
 var Scale = 1.0;
 var quad_positionLocation = 0;
 var quad_texCoordLocation = 1;
-
+var allCubes =[];
 
 // -------------------- Projection and EYE ---------------------
 var eye = vec3(0.0,0.0,2.0);
@@ -316,8 +316,8 @@ function configureTextureStage2( image, texUnit,name ) {
 	    var canvas = document.getElementById( "gl-canvas" );
 	    gl = WebGLUtils.setupWebGL( canvas );
 	    if ( !gl ) { alert( "WebGL isn't available" ); }
+			    var ext= gl.getExtension('WEBGL_draw_buffers'); //Initialize our super buffering
 		loadFB(canvas, ext);
-	    var ext= gl.getExtension('WEBGL_draw_buffers'); //Initialize our super buffering
 		cubeObject.gl = gl;
 		cubeObject.gl = gl;
 	    cubeObject.canvas = canvas;
@@ -337,13 +337,11 @@ function configureTextureStage2( image, texUnit,name ) {
 	    gl.useProgram( program );
 	    cubeObject.program = program;
 	
-		var allCubes = [];
 		for (var i = 0; i<1; i++)
 		{
 			allCubes[i] = newCube();
-			allCubes.mesh = newCube.cube;
 		}
-		forward = loadForwardShader();
+	   loadForwardShader();
 		//backwardPass = loadBackPassShader();
 		//backwardFilter = loadBackFilterShader();
 		renderForward();
@@ -358,7 +356,7 @@ function configureTextureStage2( image, texUnit,name ) {
 		forward.modelView = newUniform(program, "EyeMatrix", "mat4");
 		forward.NMatrix = newUniform(program, "normalMatrix","mat3"); 
 		forward.color = newUniform(program, "color", "vec3");
-		forward.color = newUniform(program, "colorScale", "vec3");
+		forward.colorScale = newUniform(program, "colorScale", "vec3");
 
 		forward.lPos = newUniform(program, "lightPosition","vec4");
 		forward.ePos = newUniform(program, "eyePosition","vec4");
@@ -423,11 +421,11 @@ function configureTextureStage2( image, texUnit,name ) {
 	function renderForward()
 	{
 		var cube = allCubes[0];
-		Forward.vPosition.buffer = cube.vbufferId;
-		Forward.vNormal.buffer = cube.nbufferId;;
+		forward.vPosition.buffer = cube.vbufferId;
+		forward.vNormal.buffer = cube.nbufferId;;
 		
 		var mvMatrix = lookAt( vec3(0,0,-5), vec3(0,0,0), vec3(0,1,0));
-	forward.modelView.set( modelView );
+	forward.modelView.set( mvMatrix );
 		forward.NMatrix.set( normalMatrix( mvMatrix,true));
 		forward.perspective.set( perspective( 45, 1, 0.01, 100) );
 		forward.color.set(vec3(1,0,0));
