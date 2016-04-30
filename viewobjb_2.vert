@@ -1,14 +1,6 @@
 attribute vec4 vPosition;
 attribute vec4 vNormal;
-attribute vec4 vTangent;
-attribute vec4 vLoc;
-uniform int newIndex;
-uniform   vec3 uTranslate;
-uniform   vec3 uScale;
-mat4 rot;
-varying mat4 rot_f;
 
-varying  vec2 fTexCoord;
 varying vec4 fColor;
 varying mat4 EyeMatrix_f;
 varying vec4 lightPos_f;
@@ -18,17 +10,12 @@ varying vec4 ambientProduct_f, diffuseProduct_f, specularProduct_f;
 varying mat3 ftbnMat;
 varying vec4 Normalss;
 
-
-attribute vec3 Poi;
-
-attribute vec2 vTexCoord;
 uniform mat4 EyeMatrix;
 uniform mat4 projection;
 uniform mat3 normalMatrix;
-uniform mat4 rotTranMat[10];
 //uniform float scale;
 
-uniform vec4 ambientProduct, diffuseProduct, specularProduct;
+uniform vec3 color, colorScale;
 //uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform vec4 lightPosition;
@@ -50,6 +37,12 @@ eyePosition_f = eyePosition;
 lightPos_f = lightPosition;
 EyeMatrix_f = EyeMatrix;
 shinieness_f = shininess;
+
+
+vec3 ambientProduct = color*colorScale.x;
+vec3 diffuseProduct = color*colorScale.y;
+vec3 specularProduct = color*colorScale.z;
+
 ambientProduct_f=ambientProduct;
 diffuseProduct_f=diffuseProduct;
 specularProduct_f=specularProduct;

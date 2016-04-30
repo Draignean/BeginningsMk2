@@ -116,7 +116,7 @@ function newCube()
 	    gl.bufferData( gl.ARRAY_BUFFER, newCube.mesh.normalBlock, gl.STATIC_DRAW );
 		
 		newCube.transform = mat4();	
-		newCube.size = length(newCube.mesh.faceVertexBlock)
+		newCube.size = length(newCube.numFaces*3)
 return  newCube;
 }
 
@@ -198,9 +198,10 @@ function configureTextureStage2( image, texUnit,name ) {
 		gl.framebufferTexture2D(gl.FRAMEBUFFER, ext.COLOR_ATTACHMENT3_WEBGL, gl.TEXTURE_2D, colorTexture.texData, 0);
 		 var FBOstatus = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
 		    if(FBOstatus == gl.FRAMEBUFFER_COMPLETE) {
-		    console.log("GREEN LIGHT, Frambuffer is properly configured!");        	
+		    console.log("GREEN LIGHT, Frambuffer is properly configured!");       	
 		}   
-		}
+			gl.bindFramebuffer(gl.FRAMEBUFFER, null); 
+	}
 
 		//This function originally designed by Yuqin Shao, adapted for use in this program.
 	var device_quad = {num_indices:0};
@@ -359,7 +360,7 @@ function configureTextureStage2( image, texUnit,name ) {
 		forward.colorScale = newUniform(program, "colorScale", "vec3");
 
 		forward.lPos = newUniform(program, "lightPosition","vec4");
-		forward.ePos = newUniform(program, "eyePosition","vec4");
+		forward.ePos = newUniform(program, "eyePosition","vec3");
 		forward.shiny = newUniform(program, "shinieness","float");	
 	}
 
@@ -420,9 +421,13 @@ function configureTextureStage2( image, texUnit,name ) {
 
 	function renderForward()
 	{
+		gl.clear( gl.COLOR_BUFFER_BIT |gl.DEPTH_BUFFER_BIT);
 		var cube = allCubes[0];
+		
 		forward.vPosition.buffer = cube.vbufferId;
 		forward.vNormal.buffer = cube.nbufferId;;
+		forward.vPosition.activate();
+		forward.vNormal.activate();
 		
 		var mvMatrix = lookAt( vec3(0,0,-5), vec3(0,0,0), vec3(0,1,0));
 	forward.modelView.set( mvMatrix );
@@ -430,12 +435,12 @@ function configureTextureStage2( image, texUnit,name ) {
 		forward.perspective.set( perspective( 45, 1, 0.01, 100) );
 		forward.color.set(vec3(1,0,0));
 		forward.colorScale.set(vec3(0.5,1,1));
-		forward.lPos.set(vec3(2,2,-2));
+		forward.lPos.set(vec4(2,2,-2,1));
 		forward.ePos.set(vec3(0,0,-5));
 		forward.shiny.set(10);
 
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,cube.ibufferId);
-		gl.drawElements( gl.TRIANGLES, cube.size, gl.UNSIGNED_SHORT, 0);
+		gl.drawElements( gl.TRIANGLES, cube.numFaces, gl.UNSIGNED_SHORT, 0);
    requestAnimFrame(renderForward);
 	}
 

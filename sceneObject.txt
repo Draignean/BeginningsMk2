@@ -1,0 +1,8 @@
+var scene = {};
+
+function initializeScene()
+{
+
+
+return scene;
+}

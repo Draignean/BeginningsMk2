@@ -10,7 +10,7 @@ varying vec3 ambientProduct_f, diffuseProduct_f, specularProduct_f;
 
 
 uniform mat4 EyeMatrix;
-uniform mat4 projection;
+uniform mat4 Projection;
 uniform mat3 normalMatrix;
 //uniform float scale;
 
@@ -45,8 +45,8 @@ diffuseProduct_f=diffuseProduct;
 specularProduct_f=specularProduct;
 
 
-    gl_Position = projection*EyeMatrix*vPosition;
-    
+//    gl_Position = Projection*EyeMatrix*vPosition;
+		gl_Position= vPosition;
     // position sent to fragment shader
     position_Fragment=EyeMatrix*vPosition;
 }

@@ -8,16 +8,16 @@ function genObj_cube(container) {
       texDim : 2,
       tangentDim : 3,
       vertexBlock : new Float32Array(90), 
-	  vertexBlockFull : new Float32Array(900),
+	 // vertexBlockFull : new Float32Array(900),
       normalBlock : new Float32Array(90),
-	  normalBlockFull : new Float32Array(900),
+	  //normalBlockFull : new Float32Array(900),
       texCoordBlock : new Float32Array(60),
-	  texCoordBlockFull : new Float32Array(600),
+	  //texCoordBlockFull : new Float32Array(600),
       tangentBlock : new Float32Array(90),
-	  tangentBlockFull : new Float32Array(900),
+	  //tangentBlockFull : new Float32Array(900),
       faceVertexBlock : new Uint16Array(72),
-	  faceVertexBlockFull : new Uint16Array(720),
-	  rotationIndexBlock : new Float32Array(1200),
+	  //faceVertexBlockFull : new Uint16Array(720),
+	  //rotationIndexBlock : new Float32Array(1200),
       minBound : new Float32Array([-1.0, -1.0, -1.0]),
       maxBound : new Float32Array([1.0, 1.0, 1.0]),
       centroid : new Float32Array([0.0, 0.0, 0.0]),
@@ -425,7 +425,7 @@ function genObj_cube(container) {
    container["cube"].tangentBlock[88]=0.0;
    container["cube"].tangentBlock[89]=0.0;
    
-   
+   /*
 for (var i = 0; i<1200;i++)
 {
 	container["cube"].rotationIndexBlock[i]= Math.floor(i/120);
@@ -457,6 +457,6 @@ container["cube"].faceVertexBlockFull[i] = container["cube"].faceVertexBlock[i%7
 	//container["cube"].vertexBlockFull = container["cube"].vertexBlockFull.concat(container["cube"].//vertexBlock);
    //}
    
-   
+   */
    return container;
 };
