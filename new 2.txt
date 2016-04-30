@@ -1,0 +1,3 @@
+Division by ten will serve admirably for the creation of the depth field.
+
+Not sure if division by ten will work as will for position, but we have to try.
