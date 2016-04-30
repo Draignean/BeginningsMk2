@@ -114,7 +114,8 @@ function newCube(
 	    gl.bindBuffer( gl.ARRAY_BUFFER, nBuffer);
 	    gl.bufferData( gl.ARRAY_BUFFER, cubeObject.mesh.normalBlock, gl.STATIC_DRAW );
 		
-		object.transform = mat4();	
+		cubeObject.transform = mat4();	
+		cubeObject.size = length(cubeObject.mesh.faceVertexBlock)
 return  newCube;
 }
 
@@ -448,9 +449,9 @@ function configureTextureStage2( image, texUnit,name ) {
 
 	function renderForward()
 	{
-		var cube = 
-		Forward.vPosition.buffer = cube.position;
-		Forward.vNormal.buffer = cube.normals;
+		var cube = allCubes[0];
+		Forward.vPosition.buffer = cube.vbufferId;
+		Forward.vNormal.buffer = cube.nbufferId;;
 		
 		var mvMatrix = lookAt( vec3(0,0,-5), vec3(0,0,0), vec3(0,1,0));
 		Forward.modelView.set( modelView );
@@ -458,10 +459,13 @@ function configureTextureStage2( image, texUnit,name ) {
 		Forward.perspective.set( perspective( 45, 1, 0.01, 100) );
 		Forward.color.set(vec3(1,0,0));
 		Forward.colorScale.set(vec3(0.5,1,1));
-		Forward.lPos.set(vec3(2,2,-2))
-		Forward.ePos.set(vec3(0,0,-5))
-		Forward.shiny.set(10)
+		Forward.lPos.set(vec3(2,2,-2));
+		Forward.ePos.set(vec3(0,0,-5));
+		Forward.shiny.set(10);
 
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,cube.ibufferId);
+		gl.drawElements( gl.TRIANGLES, cube.size, gl.UNSIGNED_SHORT, 0);
+   requestAnimFrame(render1);
 	}
 
 	function render1()
