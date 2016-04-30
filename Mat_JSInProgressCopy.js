@@ -352,9 +352,9 @@ function configureTextureStage2( image, texUnit,name ) {
 		Forward.perspective = newUniform(program, "Projection", "mat4");
 		Forward.modelView = newUniform(program, "EyeMatrix", "mat4");
 		Forward.NMatrix = newUniform(program, "normalMatrix","mat3"); 
-		Forward.aProd = newUniform(program, "ambientProduct","vec4");
-		Forward.dProd = newUniform(program, "diffuseProduct","vec4");
-		Forward.sProd = newUniform(program, "specularProduct","vec4");
+		Formward.color = newUniform(program, "color", "vec3");
+		Formward.color = newUniform(program, "colorScale", "vec3");
+
 		Forward.lPos = newUniform(program, "lightPosition","vec4");
 		Forward.ePos = newUniform(program, "eyePosition","vec4");
 		Forward.shiny = newUniform(program, "shinieness","float");	
@@ -448,26 +448,20 @@ function configureTextureStage2( image, texUnit,name ) {
 
 	function renderForward()
 	{
+		var cube = 
+		Forward.vPosition.buffer = cube.position;
+		Forward.vNormal.buffer = cube.normals;
 		
-		
-		
-		
-		Forward.vPosition = newAttribute(program, "vPosition");
-		Forward.vNormal = newAttribute(program, "vNormal");
-		pMatrix = perspective(fovy, aspect, near, far);
-		Forward.perspective = newUniform(program, "Projection", "mat4");
-		Forward.modelView = newUniform(program, "EyeMatrix", "mat4");
-		Forward.NMatrix = newUniform(program, "normalMatrix","mat3"); 
-		Forward.aProd = newUniform(program, "ambientProduct","vec4");
-		Forward.dProd = newUniform(program, "diffuseProduct","vec4");
-		Forward.sProd = newUniform(program, "specularProduct","vec4");
-		Forward.lPos = newUniform(program, "lightPosition","vec4");
-		Forward.ePos = newUniform(program, "eyePosition","vec4");
-		Forward.shiny = newUniform(program, "shinieness","float");
-		
-		
-		mvMatrix = lookAt(eye, at , up);
-		normalMatrixx = normalMatrix(mvMatrix,true);
+		var mvMatrix = lookAt( vec3(0,0,-5), vec3(0,0,0), vec3(0,1,0));
+		Forward.modelView.set( modelView );
+		Forward.NMatrix.set( normalMatrix( mvMatrix,true));
+		Forward.perspective.set( perspective( 45, 1, 0.01, 100) );
+		Forward.color.set(vec3(1,0,0));
+		Forward.colorScale.set(vec3(0.5,1,1));
+		Forward.lPos.set(vec3(2,2,-2))
+		Forward.ePos.set(vec3(0,0,-5))
+		Forward.shiny.set(10)
+
 	}
 
 	function render1()
